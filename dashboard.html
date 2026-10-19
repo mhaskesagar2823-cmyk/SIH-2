@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JJM Admin Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; }
+        h1 { color: #00695c; text-align: center; }
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #00695c; color: white; }
+        img { width: 100px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        img:hover { transform: scale(1.1); }
+        tr:hover { background-color: #f1f1f1; }
+        a { text-decoration: none; color: #00695c; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<h1>💧 Jal Jeevan Mission - Central Dashboard</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Photo</th>
+            <th>Description</th>
+            <th>Location (Click for Map)</th>
+            <th>Date & Time</th>
+        </tr>
+    </thead>
+    <tbody id="grievance-table-body">
+        <!-- Data will be loaded here automatically -->
+    </tbody>
+</table>
+
+<script>
+    async function loadGrievances() {
+        try {
+            const response = await fetch('/api/all_grievances');
+            const data = await response.json();
+            const tableBody = document.getElementById('grievance-table-body');
+            
+            // CRITICAL FIX: Clear the table before loading new data to prevent infinite duplicates
+            tableBody.innerHTML = ''; 
+            
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                const imageUrl = '/' + item.image_path; 
+                
+                row.innerHTML = `
+                    <td>#${item.id}</td>
+                    <td><a href="${imageUrl}" target="_blank"><img src="${imageUrl}" alt="Issue Photo"></a></td>
+                    <td>${item.description}</td>
+                    <td><a href="https://www.google.com/maps?q=${item.latitude},${item.longitude}" target="_blank">📍 ${item.latitude.toFixed(4)}, ${item.longitude.toFixed(4)}</a></td>
+                    <td>${new Date(item.timestamp).toLocaleString()}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } catch (error) {
+            console.error("Error fetching data: ", error);
+        }
+    }
+
+    // Run once immediately when the page loads
+    loadGrievances();
+
+    // AUTO-REFRESH: Automatically fetch new data every 3 seconds (3000 milliseconds)
+    setInterval(loadGrievances, 3000);
+</script>
+
+</body>
+</html>
